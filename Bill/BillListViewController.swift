@@ -101,7 +101,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         actionView.addSubview(allDeleteActionTitleImage)
         
         let allDeleteActionTitleLabel = UILabel()
-        allDeleteActionTitleLabel.text = "您将要删除所有 支出/收入 记录的详细信息"
+        allDeleteActionTitleLabel.text = "您将要删除今日所有 支出/收入 记录的详细信息"
         allDeleteActionTitleLabel.font = UIFont.systemFont(ofSize: 14)
         allDeleteActionTitleLabel.textAlignment = .center
         allDeleteActionTitleLabel.frame.origin.x = FlagFrame.screen_W * 0.1
@@ -124,7 +124,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         let cancelDeleteActionBtn = UIButton()
         cancelDeleteActionBtn.frame.size = CGSize(width: FlagFrame.screen_W * 0.7, height: 50)
         cancelDeleteActionBtn.center.x = actionView.center.x
-        cancelDeleteActionBtn.frame.origin.y = actionView.frame.size.height * 0.75
+        cancelDeleteActionBtn.frame.origin.y = actionView.frame.size.height * 0.77
         cancelDeleteActionBtn.backgroundColor = UIColor.groupTableViewBackground
         cancelDeleteActionBtn.setTitle("取消", for: .normal)
         cancelDeleteActionBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15)

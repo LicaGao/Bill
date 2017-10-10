@@ -259,8 +259,7 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
         let hintImage = UIImageView()
         hintImage.image = #imageLiteral(resourceName: "hint")
-        hintImage.frame.size = CGSize(width: 30, height: 30)
-        hintImage.frame.origin = CGPoint(x: 10, y: 10)
+        hintImage.frame = CGRect(x: 10, y: 10, width: 30, height: 30)
         hintView.addSubview(hintImage)
         
         let hintText = UILabel()

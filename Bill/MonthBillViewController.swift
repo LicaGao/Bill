@@ -22,6 +22,12 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     @IBOutlet weak var monthBillTableView: UITableView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var titleYearLabel: UILabel!
+    @IBAction func addBtn(_ sender: UIButton) {
+        addAction()
+    }
+    @IBAction func delBtn(_ sender: UIButton) {
+        actionAnimate()
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -34,20 +40,75 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         monthBillTableView.delegate = self
         monthBillTableView.dataSource = self
         monthBillTableView.tableFooterView = UIView()
-        monthBillTableView.separatorInset = UIEdgeInsetsMake(0, 15, 0, 15)
+        monthBillTableView.separatorInset = UIEdgeInsetsMake(0, 35, 0, 15)
         
-        let addBtn = UIButton()
-        addBtn.frame = CGRect(x: FlagFrame.addBtn_W, y: FlagFrame.addBtn_H, width: 45, height: 45)
-        addBtn.setImage(#imageLiteral(resourceName: "add"), for: .normal)
-        addBtn.heroID = "addBtn"
-        addBtn.addTarget(self, action: #selector(addAction(_:)), for: .touchUpInside)
-        self.view.addSubview(addBtn)
+        let bgView = UIView()
+        bgView.frame = self.view.frame
+        bgView.backgroundColor = UIColor.black
+        bgView.alpha = 0
+        bgView.isHidden = true
+        bgView.tag = 30
+        self.view.addSubview(bgView)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeAction(tapGesture:)))
+        bgView.addGestureRecognizer(tapGesture)
+        
+        let actionView = UIView()
+        actionView.frame.size = CGSize(width: FlagFrame.screen_W, height: 300)
+        actionView.center.x = self.view.center.x
+        actionView.frame.origin.y = UIScreen.main.bounds.size.height
+        actionView.isHidden = true
+        actionView.alpha = 1
+        actionView.backgroundColor = UIColor.white
+        actionView.tag = 31
+        let shapeAct : CAShapeLayer = CAShapeLayer()
+        let bepathAct : UIBezierPath = UIBezierPath(roundedRect: actionView.bounds, byRoundingCorners: [UIRectCorner.topLeft,UIRectCorner.topRight], cornerRadii: CGSize(width: 10, height: 10))
+        shapeAct.path = bepathAct.cgPath
+        actionView.layer.mask = shapeAct
+        self.view.addSubview(actionView)
+        
+        let allDeleteActionTitleImage = UIImageView()
+        allDeleteActionTitleImage.frame.size = CGSize(width: 50, height: 50)
+        allDeleteActionTitleImage.image = #imageLiteral(resourceName: "delete")
+        allDeleteActionTitleImage.center.x = actionView.center.x
+        allDeleteActionTitleImage.frame.origin.y = 20
+        actionView.addSubview(allDeleteActionTitleImage)
+        
+        let allDeleteActionTitleLabel = UILabel()
+        allDeleteActionTitleLabel.text = "您将要删除本月所有 支出/收入 记录的详细信息"
+        allDeleteActionTitleLabel.font = UIFont.systemFont(ofSize: 14)
+        allDeleteActionTitleLabel.textAlignment = .center
+        allDeleteActionTitleLabel.frame.origin.x = FlagFrame.screen_W * 0.1
+        allDeleteActionTitleLabel.frame.origin.y = 70
+        allDeleteActionTitleLabel.frame.size = CGSize(width: FlagFrame.screen_W * 0.8, height: 70)
+        allDeleteActionTitleLabel.textColor = UIColor.darkGray
+        actionView.addSubview(allDeleteActionTitleLabel)
+        
+        let allDeleteActionBtn = UIButton()
+        allDeleteActionBtn.frame.size = CGSize(width: FlagFrame.screen_W * 0.7, height: 50)
+        allDeleteActionBtn.center.x = actionView.center.x
+        allDeleteActionBtn.frame.origin.y = actionView.frame.size.height * 0.55
+        allDeleteActionBtn.backgroundColor = color.red
+        allDeleteActionBtn.setTitle("全部删除", for: .normal)
+        allDeleteActionBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15)
+        allDeleteActionBtn.layer.cornerRadius = 10
+        allDeleteActionBtn.addTarget(self, action: #selector(delAction(_:)), for: .touchUpInside)
+        actionView.addSubview(allDeleteActionBtn)
+        
+        let cancelDeleteActionBtn = UIButton()
+        cancelDeleteActionBtn.frame.size = CGSize(width: FlagFrame.screen_W * 0.7, height: 50)
+        cancelDeleteActionBtn.center.x = actionView.center.x
+        cancelDeleteActionBtn.frame.origin.y = actionView.frame.size.height * 0.77
+        cancelDeleteActionBtn.backgroundColor = UIColor.groupTableViewBackground
+        cancelDeleteActionBtn.setTitle("取消", for: .normal)
+        cancelDeleteActionBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15)
+        cancelDeleteActionBtn.setTitleColor(UIColor.darkGray, for: .normal)
+        cancelDeleteActionBtn.layer.cornerRadius = 10
+        cancelDeleteActionBtn.addTarget(self, action: #selector(cancelDeleteAction(_:)), for: .touchUpInside)
+        actionView.addSubview(cancelDeleteActionBtn)
         
         fetchMonthData()
         fetchDate()
         fetchDatePrice()
-//        let tap = UITapGestureRecognizer(target: self, action: #selector(tapClose(tap:)))
-//        self.view.addGestureRecognizer(tap)
         // Do any additional setup after loading the view.
     }
 
@@ -56,13 +117,22 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         // Dispose of any resources that can be recreated.
     }
     
-    @objc func addAction(_ sender: UIButton) {
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    func addAction() {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.dateNow = todayDate
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let addView = view.instantiateViewController(withIdentifier: "addView")
         addView.heroModalAnimationType = .fade
         self.present(addView, animated: true, completion: nil)
+    }
+    
+    @objc func cancelDeleteAction(_ sender: UIButton) {
+        cancelActionAnimate()
     }
     
     @objc func tapClose(tap : UITapGestureRecognizer) {
@@ -212,6 +282,69 @@ extension MonthBillViewController: NSFetchedResultsControllerDelegate {
         }
         
         monthBillTableView.reloadData()
+    }
+}
+
+extension MonthBillViewController {
+    @objc func closeAction(tapGesture : UITapGestureRecognizer) {
+        cancelActionAnimate()
+    }
+    @objc func delAction(_ sender: UIButton) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Bill")
+        
+        do {
+            let billsList = try context.fetch(fetchRequest)
+            for bill in billsList as! [Bill] {
+                formatter.dateFormat = "yyyy年MM月dd日"
+                let toDate = formatter.date(from: bill.date!)
+                formatter.dateFormat = "yyyy MM"
+                let toMonth = formatter.string(from: toDate!)
+                formatter.dateFormat = "yyyy MM"
+                let toNowMonth = formatter.string(from: todayDate)
+                print(toMonth, toNowMonth)
+                if toMonth == toNowMonth {
+                    context.delete(bill)
+                }
+            }
+        } catch {
+            print(error)
+        }
+        do {
+            try context.save()
+        } catch {
+            print(error)
+        }
+        cancelActionAnimate()
+        date = []
+        date_price = [:]
+        self.monthBillTableView.reloadData()
+    }
+    func cancelActionAnimate() {
+        let bg = (self.view.viewWithTag(30))
+        let av = (self.view.viewWithTag(31))
+        UIView.animate(withDuration: 0.3, animations: {
+            av?.frame.origin.y = UIScreen.main.bounds.size.height
+            bg?.alpha = 0
+        }) { (_) in
+            av?.isHidden = true
+            bg?.isHidden = true
+        }
+    }
+    func actionAnimate() {
+        let bg = (self.view.viewWithTag(30))
+        let av = (self.view.viewWithTag(31))
+        
+        bg?.isHidden = false
+        av?.isHidden = false
+        UIView.animate(withDuration: 0.3, animations: {
+            av?.frame.origin.y = FlagFrame.screen_H - 300
+            bg?.alpha = 0.3
+        }) { (_) in
+            
+        }
     }
 }
 
