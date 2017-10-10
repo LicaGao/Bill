@@ -222,9 +222,18 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
             let billsList = try context.fetch(fetchRequest)
             
             for bill in billsList as! [Bill] {
-                if bill.isEdit == true {
-                    context.delete(bill)
+                if date == nil {
+                    formatter.dateFormat = "yyyy年MM月dd日"
+                    let todayString = formatter.string(from: todayDate)
+                    if bill.date == todayString {
+                        context.delete(bill)
+                    }
+                } else {
+                    if bill.date == date {
+                        context.delete(bill)
+                    }
                 }
+
             }
         } catch {
             print(error)
