@@ -89,22 +89,24 @@ class DetailBillViewController: UIViewController {
         detView.addSubview(flagLabel)
         
         let lineView_1 = UIView()
-        lineView_1.frame.size = CGSize(width: detView.frame.size.width * 0.85 , height: 0.5)
+        lineView_1.frame.size = CGSize(width: detView.frame.size.width * 0.9 , height: 0.5)
         lineView_1.backgroundColor = color.lightGray
         lineView_1.center.x = detView.center.x
-        lineView_1.frame.origin.y = 100
+        lineView_1.frame.origin.y = 140
         detView.addSubview(lineView_1)
 
         let detLabel = UILabel()
         detLabel.frame = CGRect(x: 20, y: 105, width: 50, height: 30)
-        detLabel.text = "详情: "
+        detLabel.text = "详情"
         detLabel.textColor = UIColor.darkGray
         detLabel.textAlignment = .left
         detLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 16)
         detView.addSubview(detLabel)
         
         let detTextView = UITextView()
-        detTextView.frame = CGRect(x: 70, y: 102, width: detView.frame.size.width - 80, height: detView.frame.size.height - 110)
+        detTextView.frame.size = CGSize(width: detView.frame.size.width * 0.9, height: 120)
+        detTextView.center.x = detView.center.x
+        detTextView.frame.origin.y = 141
         detTextView.text = bill?.detail
         detTextView.isEditable = false
         detTextView.showsVerticalScrollIndicator = false
@@ -114,11 +116,6 @@ class DetailBillViewController: UIViewController {
         detTextView.font = UIFont(name: "HelveticaNeue-Thin", size: 16)
         detTextView.textAlignment = .natural
         detView.addSubview(detTextView)
-        
-        let lineView_2 = UIView()
-        lineView_2.frame = CGRect(x: 62, y: 105, width: 0.5, height: 30)
-        lineView_2.backgroundColor = color.lightGray
-        detView.addSubview(lineView_2)
         
         let priceLable = UILabel()
         priceLable.text = "￥ " + (bill?.price)!

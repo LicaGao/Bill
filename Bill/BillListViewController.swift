@@ -12,7 +12,8 @@ import DeckTransition
 
 class BillListViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     var bills : [Bill] = []
-    var prices : [Float] = []
+    var pricesOut : [Float] = []
+    var pricesIn : [Float] = []
     var fc : NSFetchedResultsController<Bill>!
     var iip = [NSIndexPath]()
     var dip = [NSIndexPath]()
@@ -27,7 +28,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     @IBAction func monthBtn(_ sender: UIButton) {
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let monthView = view.instantiateViewController(withIdentifier: "monthList")
-        monthView.heroModalAnimationType = .pull(direction: .right)
+        monthView.heroModalAnimationType = .slide(direction: .right)
         self.present(monthView, animated: true, completion: nil)
     }
     @IBOutlet weak var billListCollectionView: UICollectionView!
@@ -36,8 +37,6 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         date = appDelegate.date
-        
-//        self.view.heroModifiers = [.fade, .translate(x: FlagFrame.screen_W, y:0)]
         
         billListCollectionView.delegate = self
         billListCollectionView.dataSource = self
@@ -137,9 +136,6 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         fetchDayData()
         fetchCancelEdit()
         fetchTodayDate()
-        
-        let notificationName = Notification.Name("fetchToday")
-        NotificationCenter.default.addObserver(self, selector: #selector(fetchTodayDate), name: notificationName, object: nil)
         // Do any additional setup after loading the view.
     }
 
@@ -283,14 +279,16 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
 
         do {
             let billsList = try context.fetch(fetchRequest)
-            prices.removeAll()
+            pricesOut.removeAll()
+            pricesIn.removeAll()
             for bill in billsList as! [Bill] {
-                var priceFloat = (bill.price! as NSString).floatValue
+                let priceFloat = (bill.price! as NSString).floatValue
                 if bill.date == dateStr {
-                    if bill.isOut == false {
-                        priceFloat = -priceFloat
+                    if bill.isOut == true {
+                        pricesOut.append(priceFloat)
+                    } else {
+                        pricesIn.append(priceFloat)
                     }
-                    prices.append(priceFloat)
                 }
             }
         } catch {
@@ -307,15 +305,15 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     
     func sumOut() {
         var totalOut : Float = 0
-        for i in prices {
-            totalOut += i
+        var totalIn : Float = 0
+        for o in pricesOut {
+            totalOut += o
         }
-        if totalOut >= 0 {
-            priceLabel.text = "今日净支出: " + String(totalOut) + " 元"
-        } else {
-            priceLabel.text = "今日净收入: " + String(-totalOut) + " 元"
+        for i in pricesIn {
+            totalIn += i
         }
-        if prices.count == 0 {
+        priceLabel.text = "支出: " + String(totalOut) + " 元  |  收入: " + String(totalIn) + " 元"
+        if pricesOut.count == 0 && pricesIn.count == 0 {
             priceLabel.text = "今日暂无账单记录"
         }
     }

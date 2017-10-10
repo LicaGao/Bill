@@ -20,17 +20,17 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var addView: UIView!
     @IBAction func closeBtn(_ sender: UIButton) {
-        dismiss(animated: true, completion: nil)
+        hero_dismissViewController()
     }
     @IBOutlet weak var timeView: UIView!
     @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet weak var flagButton: UIButton!
     @IBAction func flagBtn(_ sender: UIButton) {
         detailTextView.resignFirstResponder()
         titleTextField.resignFirstResponder()
         priceTextField.resignFirstResponder()
         flagAction()
     }
-    @IBOutlet weak var flagImageView: UIImageView!
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var detailTextView: UITextView!
     @IBOutlet weak var priceTextField: UITextField!
@@ -59,7 +59,6 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         let dateStrToday = formatter.string(from: todayDate)
         print(dateStrToday, dateString, datetimeStrToday, datetimeStr)
         if dateString == dateStrToday {
-            print("hahah")
             timeLabel.text = datetimeStrToday
         } else {
             timeLabel.text = datetimeStr
@@ -377,29 +376,29 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         let tag = sender.tag
         switch tag {
         case 200:
-            flagImageView.image = UIImage(named: "out")
+            flagButton.setImage(#imageLiteral(resourceName: "out"), for: .normal)
         case 201:
-            flagImageView.image = UIImage(named: "shopping")
+            flagButton.setImage(#imageLiteral(resourceName: "shopping"), for: .normal)
         case 202:
-            flagImageView.image = UIImage(named: "online-shopping")
+            flagButton.setImage(#imageLiteral(resourceName: "online-shopping"), for: .normal)
         case 203:
-            flagImageView.image = UIImage(named: "food")
+            flagButton.setImage(#imageLiteral(resourceName: "food"), for: .normal)
         case 204:
-            flagImageView.image = UIImage(named: "go")
+            flagButton.setImage(#imageLiteral(resourceName: "go"), for: .normal)
         case 205:
-            flagImageView.image = UIImage(named: "fare")
+            flagButton.setImage(#imageLiteral(resourceName: "fare"), for: .normal)
         case 206:
-            flagImageView.image = UIImage(named: "movie")
+            flagButton.setImage(#imageLiteral(resourceName: "movie"), for: .normal)
         case 207:
-            flagImageView.image = UIImage(named: "clothes")
+            flagButton.setImage(#imageLiteral(resourceName: "clothes"), for: .normal)
         case 208:
-            flagImageView.image = UIImage(named: "transfer")
+            flagButton.setImage(#imageLiteral(resourceName: "transfer"), for: .normal)
         case 209:
-            flagImageView.image = UIImage(named: "gift")
+            flagButton.setImage(#imageLiteral(resourceName: "gift"), for: .normal)
         case 210:
-            flagImageView.image = UIImage(named: "city")
+            flagButton.setImage(#imageLiteral(resourceName: "city"), for: .normal)
         case 211:
-            flagImageView.image = UIImage(named: "in")
+            flagButton.setImage(#imageLiteral(resourceName: "in"), for: .normal)
         default:
             break
         }
@@ -464,9 +463,10 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             let timeStrIndex = timeLabel.text?.substring(to: index!)
             formatter.dateFormat = "yyyy年"
             bill.date = formatter.string(from: todayDate) + timeStrIndex!
+            appDelegate.date = bill.date
             bill.isEdit = false
             
-            let flagImage = flagImageView.image
+            let flagImage = flagButton.imageView?.image
             switch flagImage {
             case #imageLiteral(resourceName: "out")?:
                 bill.type = "out"
@@ -501,12 +501,11 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             } else {
                 bill.isOut = true
             }
-            
             appDelegate.saveContext()
-            dismiss(animated: true, completion: {
-                let notificationName = Notification.Name("fetchToday")
-                NotificationCenter.default.post(name: notificationName, object: self)
-            })
+            let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
+            let mainView = view.instantiateViewController(withIdentifier: "mainList")
+            mainView.heroModalAnimationType = .fade
+            self.present(mainView, animated: true, completion: nil)
         }
         
         

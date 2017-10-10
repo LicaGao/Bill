@@ -13,7 +13,8 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     
     var bills : [Bill] = []
     var date : [String] = []
-    var date_price : Dictionary<String, Float> = [:]
+    var valuePrice : [Float] = []
+    var date_price : Dictionary<String, [Float]> = [:]
     var fc : NSFetchedResultsController<Bill>!
     let todayDate = Date()
     let formatter = DateFormatter()
@@ -35,6 +36,13 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         monthBillTableView.tableFooterView = UIView()
         monthBillTableView.separatorInset = UIEdgeInsetsMake(0, 15, 0, 15)
         
+        let addBtn = UIButton()
+        addBtn.frame = CGRect(x: FlagFrame.addBtn_W, y: FlagFrame.addBtn_H, width: 45, height: 45)
+        addBtn.setImage(#imageLiteral(resourceName: "add"), for: .normal)
+        addBtn.heroID = "addBtn"
+        addBtn.addTarget(self, action: #selector(addAction(_:)), for: .touchUpInside)
+        self.view.addSubview(addBtn)
+        
         fetchMonthData()
         fetchDate()
         fetchDatePrice()
@@ -46,6 +54,15 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    @objc func addAction(_ sender: UIButton) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.dateNow = todayDate
+        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
+        let addView = view.instantiateViewController(withIdentifier: "addView")
+        addView.heroModalAnimationType = .fade
+        self.present(addView, animated: true, completion: nil)
     }
     
     @objc func tapClose(tap : UITapGestureRecognizer) {
@@ -66,7 +83,7 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let mainView = view.instantiateViewController(withIdentifier: "mainList")
-        mainView.heroModalAnimationType = .push(direction: .left)
+        mainView.heroModalAnimationType = .slide(direction: .left)
         self.present(mainView, animated: true, completion: nil)
     }
     
@@ -76,17 +93,15 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
             $1 < $0
         }
         let key = dateSort[indexPath.row]
-        let index = key.index(key.startIndex, offsetBy: 5)
+        let index = key.index(key.startIndex, offsetBy: 8)
         let keyResult = key.substring(from: index)
         cell.dateLabel.text = keyResult
         let value = date_price[key]
-        if value! >= 0 {
-            cell.priceLabel.text = "净支出: " + String(describing: value!) + " 元"
-            cell.priceLabel.textColor = color.blue
+        cell.priceLabel.text = "支出: " + String(describing: value![0]) + " 元"
+        cell.priceInLabel.text = "收入: " + String(describing: value![1]) + " 元"
+        if value![0] >= value![1] {
             cell.flagView.backgroundColor = color.blue
         } else {
-            cell.priceLabel.text = "净收入: " + String(describing: -value!) + " 元"
-            cell.priceLabel.textColor = color.green
             cell.flagView.backgroundColor = color.green
         }
         return cell
@@ -119,23 +134,29 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     func fetchDatePrice() {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let context = appDelegate.persistentContainer.viewContext
-        var priceTot : Float = 0
+        var priceOut : Float = 0
+        var priceIn : Float = 0
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Bill")
         do {
             let billsList = try context.fetch(fetchRequest)
             date_price.removeAll()
             for i in date {
-                priceTot = 0
+                priceOut = 0
+                priceIn = 0
+                valuePrice = []
                 for bill in billsList as! [Bill] {
-                    var priceFloat = (bill.price! as NSString).floatValue
+                    let priceFloat = (bill.price! as NSString).floatValue
                     if bill.date == i {
-                        if bill.isOut == false {
-                            priceFloat = -priceFloat
+                        if bill.isOut == true {
+                            priceOut += priceFloat
+                        } else {
+                            priceIn += priceFloat
                         }
-                        priceTot += priceFloat
                     }
                 }
-                date_price[i] = priceTot
+                valuePrice.append(priceOut)
+                valuePrice.append(priceIn)
+                date_price[i] = valuePrice
             }
             
         } catch {
@@ -146,6 +167,8 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         } catch {
             print(error)
         }
+        
+        print(date_price)
     }
     
 
@@ -196,5 +219,6 @@ class MonthBillTableViewCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var priceLabel: UILabel!
     @IBOutlet weak var flagView: UIView!
+    @IBOutlet weak var priceInLabel: UILabel!
     
 }
