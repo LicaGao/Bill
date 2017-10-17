@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     var bill : Bill?
     var date : String?
+    var dateMonth : String?
     var dateNow : Date?
 
 

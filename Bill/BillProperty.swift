@@ -47,7 +47,10 @@ class FlagFrame {
 class color {
     static let blue = UIColor(red: 164/255, green: 195/255, blue: 227/255, alpha: 1)
     static let lightBlue = UIColor(red: 237/255, green: 243/255, blue: 249/255, alpha: 1)
+    static let highBlue = UIColor(red: 178/255, green: 215/255, blue: 255/255, alpha: 1)
+    static let gray = UIColor(red: 74/255, green: 78/255, blue: 81/255, alpha: 1)
     static let lightGray = UIColor(red: 200/255, green: 199/255, blue: 204/255, alpha: 1)
+    static let highGray = UIColor(red: 86/255, green: 90/255, blue: 93/255, alpha: 1)
     static let red = UIColor(red: 226/255, green: 87/255, blue: 76/255, alpha: 1)
     static let green = UIColor(red: 177/255, green: 207/255, blue: 149/255, alpha: 1)
     static let lightGreen = UIColor(red: 237/255, green: 244/255, blue: 230/255, alpha: 1)
