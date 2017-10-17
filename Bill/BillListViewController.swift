@@ -47,8 +47,8 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
             titleLabel.text = formatter.string(from: todayDate)
         } else {
             let index = date?.index((date?.startIndex)!, offsetBy: 5)
-            let dateMD = date?.substring(from: index!)
-            titleLabel.text = dateMD
+            let dateMD = date?[index!...]
+            titleLabel.text = String(describing: dateMD!)
         }
         
         
