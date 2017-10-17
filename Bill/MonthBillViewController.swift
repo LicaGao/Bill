@@ -9,10 +9,9 @@
 import UIKit
 import CoreData
 
-class MonthBillViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate {
+class MonthBillViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var bills : [Bill] = []
-    var day : String?
     var date : [String] = []
     var valuePrice : [Float] = []
     var date_price : Dictionary<String, [Float]> = [:]
@@ -23,12 +22,6 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     @IBOutlet weak var monthBillTableView: UITableView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var titleYearLabel: UILabel!
-    @IBAction func allMenuBtn(_ sender: UIButton) {
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let allView = view.instantiateViewController(withIdentifier: "allBill")
-        allView.heroModalAnimationType = .slide(direction: .down)
-        self.present(allView, animated: true, completion: nil)
-    }
     @IBAction func addBtn(_ sender: UIButton) {
         addAction()
     }
@@ -38,25 +31,11 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        day = appDelegate.dateMonth
-        
-        if day == nil {
-            formatter.dateFormat = "MMMM"
-            self.formatter.locale = Locale(identifier: "zh_CN")
-            titleLabel.text = formatter.string(from: todayDate)
-            formatter.dateFormat = "yyyy"
-            titleYearLabel.text = formatter.string(from: todayDate)
-        } else {
-            formatter.dateFormat = "yyyy年MM月"
-            let trDate = formatter.date(from: day!)
-            formatter.dateFormat = "MMMM"
-            self.formatter.locale = Locale(identifier: "zh_CN")
-            titleLabel.text = formatter.string(from: trDate!)
-            formatter.dateFormat = "yyyy"
-            titleYearLabel.text = formatter.string(from: trDate!)
-        }
-        
+        formatter.dateFormat = "MMMM"
+        self.formatter.locale = Locale(identifier: "zh_CN")
+        titleLabel.text = formatter.string(from: todayDate)
+        formatter.dateFormat = "yyyy"
+        titleYearLabel.text = formatter.string(from: todayDate)
         
         monthBillTableView.delegate = self
         monthBillTableView.dataSource = self
@@ -127,6 +106,7 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         cancelDeleteActionBtn.addTarget(self, action: #selector(cancelDeleteAction(_:)), for: .touchUpInside)
         actionView.addSubview(cancelDeleteActionBtn)
         
+        fetchMonthData()
         fetchDate()
         fetchDatePrice()
         // Do any additional setup after loading the view.
@@ -184,8 +164,8 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         }
         let key = dateSort[indexPath.row]
         let index = key.index(key.startIndex, offsetBy: 8)
-        let keyResult = key[index...]
-        cell.dateLabel.text = "\(keyResult)"
+        let keyResult = key.substring(from: index)
+        cell.dateLabel.text = keyResult
         let value = date_price[key]
         cell.priceLabel.text = "支出: " + String(describing: value![0]) + " 元"
         cell.priceInLabel.text = "收入: " + String(describing: value![1]) + " 元"
@@ -200,17 +180,9 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     func fetchDate() {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let context = appDelegate.persistentContainer.viewContext
+        
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Bill")
-        if day == nil {
-            formatter.dateFormat = "yyyy年MM月"
-            let monthStr = formatter.string(from: todayDate)
-            let condition = "\(monthStr)"
-            let predicate = NSPredicate(format: "date BEGINSWITH %@",condition)
-            fetchRequest.predicate = predicate
-        } else {
-            let predicate = NSPredicate(format: "date BEGINSWITH %@",day!)
-            fetchRequest.predicate = predicate
-        }
+        
         do {
             let billsList = try context.fetch(fetchRequest)
             date.removeAll()
@@ -235,16 +207,6 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         var priceOut : Float = 0
         var priceIn : Float = 0
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Bill")
-        if day == nil {
-            formatter.dateFormat = "yyyy年MM月"
-            let monthStr = formatter.string(from: todayDate)
-            let condition = "\(monthStr)"
-            let predicate = NSPredicate(format: "date BEGINSWITH %@",condition)
-            fetchRequest.predicate = predicate
-        } else {
-            let predicate = NSPredicate(format: "date BEGINSWITH %@",day!)
-            fetchRequest.predicate = predicate
-        }
         do {
             let billsList = try context.fetch(fetchRequest)
             date_price.removeAll()
@@ -275,6 +237,8 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         } catch {
             print(error)
         }
+        
+        print(date_price)
     }
     
 
@@ -288,6 +252,37 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     */
 
+}
+
+extension MonthBillViewController: NSFetchedResultsControllerDelegate {
+    func fetchMonthData() {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        let request : NSFetchRequest<Bill> = Bill.fetchRequest()
+        let sortDescriptors = NSSortDescriptor(key: "date", ascending: false)
+        formatter.dateFormat = "yyyy年MM月"
+        let monthStr = formatter.string(from: todayDate)
+        let predicate = NSPredicate(format: "date CONTAINS %@","\(monthStr)")
+        request.predicate = predicate
+        request.sortDescriptors = [sortDescriptors]
+        
+        fc = NSFetchedResultsController(fetchRequest: request, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        fc.delegate = self
+        
+        do {
+            
+            try fc.performFetch()
+            if let object = fc.fetchedObjects {
+                bills = object
+                print ("取回成功")
+            }
+            
+        } catch {
+            print ("取回失败")
+        }
+        
+        monthBillTableView.reloadData()
+    }
 }
 
 extension MonthBillViewController {
@@ -305,16 +300,11 @@ extension MonthBillViewController {
             for bill in billsList as! [Bill] {
                 formatter.dateFormat = "yyyy年MM月dd日"
                 let toDate = formatter.date(from: bill.date!)
-                formatter.dateFormat = "yyyy年MM月"
+                formatter.dateFormat = "yyyy MM"
                 let toMonth = formatter.string(from: toDate!)
-                var toNowMonth : String
-                if day == nil {
-                    formatter.dateFormat = "yyyy年MM月"
-                    toNowMonth = formatter.string(from: todayDate)
-                } else {
-                    toNowMonth = day!
-                }
-                
+                formatter.dateFormat = "yyyy MM"
+                let toNowMonth = formatter.string(from: todayDate)
+                print(toMonth, toNowMonth)
                 if toMonth == toNowMonth {
                     context.delete(bill)
                 }
