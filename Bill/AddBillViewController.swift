@@ -309,7 +309,9 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         doneActionBtn.layer.cornerRadius = 10
         doneActionBtn.addTarget(self, action: #selector(datePickerCloseAction), for: .touchUpInside)
         datePickerView.addSubview(doneActionBtn)
-        
+
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         // Do any additional setup after loading the view.
     }
     
@@ -317,6 +319,14 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         NotificationCenter.default.removeObserver(self)
     }
 
+//    @objc func keyBoardWillShow(_ notification: Notification) {
+//        animateViewUp()
+//    }
+//
+//    @objc func keyBoardWillHide(_ notification: Notification){
+//        animateViewDown()
+//    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -330,6 +340,7 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         view.endEditing(true)
     }
+    
 //    func textViewDidBeginEditing(_ textView: UITextView) {
 //        animateViewUp()
 //    }
@@ -341,8 +352,9 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
 //            self.addView.frame = self.addView.frame.offsetBy(dx: 0, dy: -60)
 //            self.titleStack.frame = self.titleStack.frame.offsetBy(dx: 0, dy: -60)
 //        }) { (_) in
-//
+//            
 //        }
+//
 //    }
 //    func animateViewDown() {
 //        UIView.animate(withDuration: 0.3, animations: {
@@ -366,8 +378,8 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         formatter.dateFormat = "MM月dd日 HH:mm:ss"
         let timeStr = formatter.string(from: datetimePicker.date)
         let index = timeStr.index(timeStr.startIndex, offsetBy: 12)
-        let timeStrIndex = timeStr.substring(to: index)
-        timeLabel.text = timeStrIndex
+        let timeStrIndex = timeStr[..<index]
+        timeLabel.text = "\(timeStrIndex)"
     }
     
     @objc func flagChoice(_ sender : UIButton) {
@@ -459,9 +471,9 @@ class AddBillViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             let dp = (self.view.viewWithTag(291) as! UIDatePicker)
             bill.time = formatter.string(from: dp.date)
             let index = timeLabel.text?.index((timeLabel.text?.startIndex)!, offsetBy: 6)
-            let timeStrIndex = timeLabel.text?.substring(to: index!)
+            let timeStrIndex = timeLabel.text?[..<index!]
             formatter.dateFormat = "yyyy年"
-            bill.date = formatter.string(from: todayDate) + timeStrIndex!
+            bill.date = formatter.string(from: todayDate) + "\(timeStrIndex!)"
             appDelegate.date = bill.date
             bill.isEdit = false
             

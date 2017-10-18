@@ -26,10 +26,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     @IBOutlet weak var priceLabel: UILabel!
     @IBOutlet weak var titleLabel: UILabel!
     @IBAction func monthBtn(_ sender: UIButton) {
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let monthView = view.instantiateViewController(withIdentifier: "monthList")
-        monthView.heroModalAnimationType = .slide(direction: .right)
-        self.present(monthView, animated: true, completion: nil)
+        monthAction()
     }
     @IBOutlet weak var billListCollectionView: UICollectionView!
     override func viewDidLoad() {
@@ -133,6 +130,9 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         cancelDeleteActionBtn.addTarget(self, action: #selector(cancelDeleteAction(_:)), for: .touchUpInside)
         actionView.addSubview(cancelDeleteActionBtn)
         
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeGestureActionn(swipeGesture:)))
+        self.view.addGestureRecognizer(swipeGesture)
+        
         fetchDayData()
         fetchCancelEdit()
         fetchTodayDate()
@@ -168,6 +168,17 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         default:
             break
         }
+    }
+    
+    @objc func swipeGestureActionn(swipeGesture : UISwipeGestureRecognizer) {
+        monthAction()
+    }
+    
+    func monthAction() {
+        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
+        let monthView = view.instantiateViewController(withIdentifier: "monthList")
+        monthView.heroModalAnimationType = .slide(direction: .right)
+        self.present(monthView, animated: true, completion: nil)
     }
     
     func addAction() {
@@ -377,8 +388,8 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BillListCollectionViewCell
         let bill = bills[indexPath.item]
         let index = bill.time?.index((bill.time?.startIndex)!, offsetBy: 12)
-        let time = bill.time?.substring(to: index!)
-        cell.timeLabel.text = time
+        let time = bill.time?[..<index!]
+        cell.timeLabel.text = "\(time!)"
         cell.detailLabel.text = bill.title
         cell.priceLabel.text = bill.price! + " 元"
         cell.typeImage.image = UIImage(named: bill.type!)
@@ -454,6 +465,7 @@ extension BillListViewController {
     func editAnimate() {
         let addButton = (self.view.viewWithTag(300) as! UIButton)
         let allDeleteButton = (self.view.viewWithTag(302) as! UIButton)
+        let backButtonn = (self.view.viewWithTag(306) as! UIButton)
         allDeleteButton.isHidden = false
         UIView.animate(withDuration: 0.3, animations: {
             self.titleLabel.alpha = 0
@@ -467,14 +479,19 @@ extension BillListViewController {
             allDeleteButton.frame.origin.y = FlagFrame.alldeleteBtn_H
         }) { (_) in
             self.titleLabel.isHidden = true
+            backButtonn.isHidden = true
+            self.billListCollectionView.allowsSelection = false
         }
     }
     
     func cancelAnimate() {
         let addButton = (self.view.viewWithTag(300) as! UIButton)
         let allDeleteButton = (self.view.viewWithTag(302) as! UIButton)
-
+        let backButtonn = (self.view.viewWithTag(306) as! UIButton)
+        
         self.titleLabel.isHidden = false
+        backButtonn.isHidden = false
+        self.billListCollectionView.allowsSelection = true
         fetchTodayDate()
         UIView.animate(withDuration: 0.3, animations: {
             self.titleLabel.alpha = 1

@@ -24,8 +24,6 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
         monthView.heroModalAnimationType = .slide(direction: .up)
         self.present(monthView, animated: true, completion: nil)
     }
-    @IBAction func delBtn(_ sender: UIButton) {
-    }
     @IBAction func addBtn(_ sender: UIButton) {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.dateNow = todayDate
@@ -36,6 +34,7 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.present(addView, animated: true, completion: nil)
     }
     @IBAction func menuBtn(_ sender: UIButton) {
+        menuAction()
     }
     @IBOutlet weak var allBillTableView: UITableView!
     override func viewDidLoad() {
@@ -46,6 +45,9 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
         allBillTableView.tableFooterView = UIView()
         allBillTableView.separatorInset = UIEdgeInsetsMake(0, 15, 0, 0)
         allBillTableView.separatorColor = color.highGray
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeGestureActionn(swipeGesture:)))
+        self.view.addGestureRecognizer(swipeGesture)
+        
         fetchDate()
         // Do any additional setup after loading the view.
     }
@@ -58,6 +60,17 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    @objc func swipeGestureActionn(swipeGesture : UISwipeGestureRecognizer) {
+       menuAction()
+    }
+    
+    func menuAction() {
+        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
+        let menuView = view.instantiateViewController(withIdentifier: "otherView")
+        menuView.heroModalAnimationType = .slide(direction: .right)
+        self.present(menuView, animated: true, completion: nil)
     }
     
     func fetchDate() {
@@ -127,7 +140,6 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         allBillTableView.deselectRow(at: indexPath, animated: true)
-        
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let value = allDate[years[indexPath.section]]
         appDelegate.dateMonth = years[indexPath.section] + (value?[indexPath.row])!
@@ -159,6 +171,8 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "allCell", for: indexPath) as! AllBillTableViewCell
         let value = allDate[years[indexPath.section]]
+        cell.selectedBackgroundView = UIView()
+        cell.selectedBackgroundView?.backgroundColor = color.highGray
         cell.label.text = value?[indexPath.row]
         return cell
     }

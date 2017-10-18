@@ -187,6 +187,8 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         let keyResult = key[index...]
         cell.dateLabel.text = "\(keyResult)"
         let value = date_price[key]
+        cell.selectedBackgroundView = UIView()
+        cell.selectedBackgroundView?.backgroundColor = color.lightBlue
         cell.priceLabel.text = "支出: " + String(describing: value![0]) + " 元"
         cell.priceInLabel.text = "收入: " + String(describing: value![1]) + " 元"
         if value![0] >= value![1] {
