@@ -2,7 +2,7 @@
 //  OtherMenuViewController.swift
 //  Bill
 //
-//  Created by 高鑫 on 2017/10/18.
+//  Created by 高鑫 on 2017/10/19.
 //  Copyright © 2017年 高鑫. All rights reserved.
 //
 

@@ -28,6 +28,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     @IBAction func monthBtn(_ sender: UIButton) {
         monthAction()
     }
+    @IBOutlet weak var allView: UIView!
     @IBOutlet weak var billListCollectionView: UICollectionView!
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,7 +38,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         
         billListCollectionView.delegate = self
         billListCollectionView.dataSource = self
-        
+        billListCollectionView.alwaysBounceVertical = true
         formatter.dateFormat = "MM月dd日"
         formatter.locale = Locale(identifier: "zh_CN")
         if date == nil {

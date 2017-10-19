@@ -19,6 +19,7 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     var fc : NSFetchedResultsController<Bill>!
     let todayDate = Date()
     let formatter = DateFormatter()
+    var ym : String = ""
 
     @IBOutlet weak var monthBillTableView: UITableView!
     @IBOutlet weak var titleLabel: UILabel!
@@ -161,6 +162,68 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return date_price.count
+    }
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        monthBillTableView.beginUpdates()
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        monthBillTableView.endUpdates()
+    }
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .delete:
+            monthBillTableView.deleteRows(at: [indexPath!], with: .automatic)
+        case .insert:
+            monthBillTableView.insertRows(at: [newIndexPath!], with: .automatic)
+        case .update:
+            monthBillTableView.reloadRows(at: [indexPath!], with: .automatic)
+        default:
+            monthBillTableView.reloadData()
+        }
+        
+        if let object = controller.fetchedObjects {
+            bills = object as! [Bill]
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let actionDel = UIContextualAction(style: .destructive, title: "del") { (action, view, finished) in
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            let context = appDelegate.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Bill")
+            
+            do {
+                let billsList = try context.fetch(fetchRequest)
+                let dateSort = self.date.sorted(){
+                    $1 < $0
+                }
+                for bill in billsList as! [Bill] {
+                    
+                    if bill.date == dateSort[indexPath.row] {
+                        self.date.remove(at: self.date.index(of: dateSort[indexPath.row])!)
+                        self.date_price.removeValue(forKey: dateSort[indexPath.row])
+                        context.delete(bill)
+                    }
+                }
+            } catch {
+                print(error)
+            }
+            do {
+                try context.save()
+            } catch {
+                print(error)
+            }
+            
+            self.monthBillTableView.deleteRows(at: [indexPath], with: .automatic)
+            
+            finished(true)
+        }
+        actionDel.backgroundColor = color.red
+        actionDel.image = UIImage(named: "deleteAction")
+        return UISwipeActionsConfiguration(actions: [actionDel])
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
