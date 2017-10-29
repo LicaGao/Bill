@@ -40,10 +40,7 @@ class OtherMenuViewController: UIViewController, MFMailComposeViewControllerDele
     }
     
     func backAction() {
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let allView = view.instantiateViewController(withIdentifier: "allBill")
-        allView.heroModalAnimationType = .slide(direction: .left)
-        self.present(allView, animated: true, completion: nil)
+        hero_dismissViewController()
     }
     
     func configuredMailComposeViewController() -> MFMailComposeViewController {

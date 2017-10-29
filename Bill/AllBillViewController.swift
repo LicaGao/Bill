@@ -19,10 +19,7 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
     let todayDate = Date()
 
     @IBAction func backBtn(_ sender: UIButton) {
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let monthView = view.instantiateViewController(withIdentifier: "monthList")
-        monthView.heroModalAnimationType = .slide(direction: .up)
-        self.present(monthView, animated: true, completion: nil)
+        hero_dismissViewController()
     }
     @IBAction func addBtn(_ sender: UIButton) {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -69,7 +66,7 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
     func menuAction() {
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let menuView = view.instantiateViewController(withIdentifier: "otherView")
-        menuView.heroModalAnimationType = .slide(direction: .right)
+        menuView.heroModalAnimationType = .selectBy(presenting: .slide(direction: .right), dismissing: .slide(direction: .left))
         self.present(menuView, animated: true, completion: nil)
     }
     
@@ -143,10 +140,11 @@ class AllBillViewController: UIViewController, UITableViewDelegate, UITableViewD
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let value = allDate[years[indexPath.section]]
         appDelegate.dateMonth = years[indexPath.section] + (value?[indexPath.row])!
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let monthView = view.instantiateViewController(withIdentifier: "monthList")
-        monthView.heroModalAnimationType = .slide(direction: .up)
-        self.present(monthView, animated: true, completion: nil)
+        
+        hero_dismissViewController()
+        
+        let notificationName = Notification.Name(rawValue: "monthNotification")
+        NotificationCenter.default.post(name: notificationName, object: self)
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

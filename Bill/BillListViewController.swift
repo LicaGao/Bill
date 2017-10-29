@@ -134,6 +134,9 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeGestureActionn(swipeGesture:)))
         self.view.addGestureRecognizer(swipeGesture)
         
+        let notificationName = Notification.Name(rawValue: "dayNotification")
+        NotificationCenter.default.addObserver(self, selector: #selector(dayNotification(notification:)), name: notificationName, object: nil)
+        
         fetchDayData()
         fetchCancelEdit()
         fetchTodayDate()
@@ -148,6 +151,23 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    @objc func dayNotification(notification: Notification) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        date = appDelegate.date
+        formatter.dateFormat = "MM月dd日"
+        formatter.locale = Locale(identifier: "zh_CN")
+        if date == nil {
+            self.titleLabel.text = formatter.string(from: todayDate)
+        } else {
+            let index = date?.index((date?.startIndex)!, offsetBy: 5)
+            let dateMD = date?[index!...]
+            self.titleLabel.text = String(describing: dateMD!)
+        }
+        fetchDayData()
+        fetchCancelEdit()
+        fetchTodayDate()
     }
     
     @objc func closeAction(tapGesture : UITapGestureRecognizer) {
@@ -178,7 +198,7 @@ class BillListViewController: UIViewController, UICollectionViewDelegate, UIColl
     func monthAction() {
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let monthView = view.instantiateViewController(withIdentifier: "monthList")
-        monthView.heroModalAnimationType = .slide(direction: .right)
+        monthView.heroModalAnimationType = .selectBy(presenting: .slide(direction: .right), dismissing: .slide(direction: .left))
         self.present(monthView, animated: true, completion: nil)
     }
     

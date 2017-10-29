@@ -27,7 +27,7 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     @IBAction func allMenuBtn(_ sender: UIButton) {
         let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
         let allView = view.instantiateViewController(withIdentifier: "allBill")
-        allView.heroModalAnimationType = .slide(direction: .down)
+        allView.heroModalAnimationType = .selectBy(presenting: .slide(direction: .down), dismissing: .slide(direction: .up))
         self.present(allView, animated: true, completion: nil)
     }
     @IBAction func addBtn(_ sender: UIButton) {
@@ -130,6 +130,9 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         
         fetchDate()
         fetchDatePrice()
+        
+        let notificationName = Notification.Name(rawValue: "monthNotification")
+        NotificationCenter.default.addObserver(self, selector: #selector(monthNotification(notification:)), name: notificationName, object: nil)
         // Do any additional setup after loading the view.
     }
 
@@ -141,6 +144,30 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    @objc func monthNotification(notification: Notification) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        day = appDelegate.dateMonth
+        
+        if day == nil {
+            formatter.dateFormat = "MMMM"
+            self.formatter.locale = Locale(identifier: "zh_CN")
+            titleLabel.text = formatter.string(from: todayDate)
+            formatter.dateFormat = "yyyy"
+            titleYearLabel.text = formatter.string(from: todayDate)
+        } else {
+            formatter.dateFormat = "yyyy年MM月"
+            let trDate = formatter.date(from: day!)
+            formatter.dateFormat = "MMMM"
+            self.formatter.locale = Locale(identifier: "zh_CN")
+            titleLabel.text = formatter.string(from: trDate!)
+            formatter.dateFormat = "yyyy"
+            titleYearLabel.text = formatter.string(from: trDate!)
+        }
+        fetchDate()
+        fetchDatePrice()
+        monthBillTableView.reloadData()
     }
     
     func addAction() {
@@ -197,7 +224,7 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
             
             do {
                 let billsList = try context.fetch(fetchRequest)
-                let dateSort = self.date.sorted(){
+                let dateSort = self.date.sorted() {
                     $1 < $0
                 }
                 for bill in billsList as! [Bill] {
@@ -234,10 +261,9 @@ class MonthBillViewController: UIViewController, UITableViewDelegate, UITableVie
         }
         appDelegate.date = dateSort[indexPath.row]
         
-        let view = UIStoryboard.init(name: "Main", bundle: Bundle.main)
-        let mainView = view.instantiateViewController(withIdentifier: "mainList")
-        mainView.heroModalAnimationType = .slide(direction: .left)
-        self.present(mainView, animated: true, completion: nil)
+        hero_dismissViewController()
+        let notificationName = Notification.Name(rawValue: "dayNotification")
+        NotificationCenter.default.post(name: notificationName, object: self)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
